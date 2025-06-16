@@ -133,6 +133,36 @@ contract CrowCampaignTest is Test {
 
     }
 
+    
+    function test_ContributeSameUser() public {
+        assertEq(contributor.balance, 10 ether);
+
+        uint256 backers = campaign.getTotalBackers();
+        assertEq(backers, 0);
+
+        uint256 contributedAmount = campaign.getContributedAmount(contributor);
+        assertEq(contributedAmount, 0);
+
+        vm.startPrank(contributor);
+        vm.expectEmit(true, true, true, true);
+        emit ContributionMade(contributor, 1 ether);
+        
+        campaign.contribute{value: 1 ether}();
+        campaign.contribute{value: 2 ether}();
+        
+        vm.stopPrank();
+
+        assertEq(contributor.balance, 7 ether);
+        assertEq(address(campaign).balance, 3 ether);
+
+        backers = campaign.getTotalBackers();
+        assertEq(backers, 1);
+
+        contributedAmount = campaign.getContributedAmount(contributor);
+        assertEq(contributedAmount, 3 ether);
+
+    }
+
     function test_ContributeGetReward() public {
         assertEq(contributor.balance, 10 ether);
 

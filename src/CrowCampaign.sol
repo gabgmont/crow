@@ -51,23 +51,27 @@ contract CrowCampaign is Ownable, ReentrancyGuard, Pausable {
     function contribute() external payable nonReentrant whenNotPaused {
         require(block.timestamp < _deadline, "Campaign has ended");
         require(msg.value > 0, "Must send ETH");
-
+        
+        if (_contributions[msg.sender] <= 0) {
+            _contributors.push(msg.sender);
+        }
+        
         _contributions[msg.sender] += msg.value;
-        _contributors.push(msg.sender);
 
         emit ContributionMade(msg.sender, msg.value);
-        
+
         bool receivedReward;
 
         for (uint32 i = 0; i < _rewards.length; i++) {
-            CrowContributionReward rewardContract = CrowContributionReward(_rewards[i]);
+            CrowContributionReward rewardContract = CrowContributionReward(
+                _rewards[i]
+            );
 
             if (msg.value >= rewardContract.getMinDonation()) {
                 rewardContract.mint(msg.sender);
                 emit RewardReceived(msg.sender, _rewards[i]);
                 receivedReward = true;
-                
-            } 
+            }
         }
 
         if (!receivedReward) {
@@ -86,7 +90,12 @@ contract CrowCampaign is Ownable, ReentrancyGuard, Pausable {
         emit FundsWithdrawn(owner(), address(this).balance);
     }
 
-    function addReward(string memory name, string memory symbol, string memory metadataURI, uint minDonation) external onlyOwner returns (address) {
+    function addReward(
+        string memory name,
+        string memory symbol,
+        string memory metadataURI,
+        uint minDonation
+    ) external onlyOwner returns (address) {
         CrowContributionReward reward = new CrowContributionReward(
             address(this),
             name,
@@ -94,16 +103,16 @@ contract CrowCampaign is Ownable, ReentrancyGuard, Pausable {
             metadataURI,
             minDonation
         );
-        
+
         _rewards.push(address(reward));
 
         emit RewardCreated(owner(), minDonation);
 
         return address(reward);
     }
-    
+
     // Read functions
-    
+
     function getCreatedBy() external view returns (address) {
         return owner();
     }
@@ -112,7 +121,9 @@ contract CrowCampaign is Ownable, ReentrancyGuard, Pausable {
         return address(this).balance;
     }
 
-    function getContributedAmount(address addr) external view returns (uint256) {
+    function getContributedAmount(
+        address addr
+    ) external view returns (uint256) {
         return _contributions[addr];
     }
 
@@ -129,14 +140,15 @@ contract CrowCampaign is Ownable, ReentrancyGuard, Pausable {
     }
 
     function getCampaignInfo() external view returns (CampaignInfo memory) {
-        return CampaignInfo({
-            title: _title,
-            description: _description,
-            goalAmount: _goalAmount,
-            deadline: _deadline,
-            fundsWithdrawn: _fundsWithdrawn,
-            rewards: _rewards,
-            contributors: _contributors
-        });
+        return
+            CampaignInfo({
+                title: _title,
+                description: _description,
+                goalAmount: _goalAmount,
+                deadline: _deadline,
+                fundsWithdrawn: _fundsWithdrawn,
+                rewards: _rewards,
+                contributors: _contributors
+            });
     }
 }
