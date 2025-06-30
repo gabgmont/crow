@@ -29,7 +29,7 @@ contract CrowCampaign is Ownable, ReentrancyGuard, Pausable {
 
     event ContributionMade(address indexed contributor, uint amount);
     event FundsWithdrawn(address indexed owner, uint amount);
-    event RewardCreated(address indexed owner, uint minDonation);
+    event RewardCreated(address indexed owner, address indexed rewardAddress, string rewardId);
     event RewardReceived(address indexed contributor, address indexed reward);
     event RewardNotReceived(address indexed contributor);
 
@@ -106,7 +106,7 @@ contract CrowCampaign is Ownable, ReentrancyGuard, Pausable {
 
         _rewards.push(address(reward));
 
-        emit RewardCreated(owner(), minDonation);
+        emit RewardCreated(owner(), address(reward), symbol);
 
         return address(reward);
     }

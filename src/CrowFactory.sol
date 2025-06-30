@@ -17,9 +17,7 @@ contract CrowFactory {
         string memory description,
         uint goalAmount,
         uint deadline
-    ) external returns (address) {
-        emit CampaignCreated(address(9), msg.sender, block.timestamp);
-        
+    ) external returns (address) {        
         CrowCampaign newCampaign = new CrowCampaign(
             msg.sender,
             title,
@@ -29,7 +27,7 @@ contract CrowFactory {
         );
 
         deployedCampaigns.push(address(newCampaign));
-        emit CampaignCreated(address(newCampaign), msg.sender, 0);
+        emit CampaignCreated(address(newCampaign), msg.sender, block.timestamp);
 
         return address(newCampaign);
     }
